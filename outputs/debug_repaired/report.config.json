@@ -1,0 +1,125 @@
+{
+  "embedding_model": {
+    "commit_hash": "2d82fab19ac3a73a20dd20333d27eb8a52d6e97f",
+    "device": "cpu",
+    "model_id": "princeton-nlp/sup-simcse-bert-base-uncased",
+    "revision": null
+  },
+  "experiment": {
+    "aisp": {
+      "alpha": 0.99,
+      "enabled": true,
+      "final_sample_count": 4,
+      "kappa": 4,
+      "lambda_": 0.1,
+      "n": 4,
+      "sigma_sq": 0.3
+    },
+    "bon": {
+      "batch_size": 4,
+      "enabled": true,
+      "num_samples": null,
+      "temperature": 0.8,
+      "top_p": 0.8
+    },
+    "dataset": {
+      "cache_dir": ".hf_cache/datasets",
+      "config_name": "default",
+      "dataset_id": "Anthropic/hh-rlhf",
+      "debug_size": 2,
+      "eval_size": 6,
+      "eval_start": 8,
+      "prompt_source_field": "chosen",
+      "shuffle_seed": 17,
+      "split": "test",
+      "tuning_size": 3,
+      "tuning_start": 0
+    },
+    "embedding": {
+      "batch_size": 8,
+      "cache_dir": ".hf_cache/models",
+      "device": "cpu",
+      "max_length": 256,
+      "model_id": "princeton-nlp/sup-simcse-bert-base-uncased",
+      "revision": null
+    },
+    "greedy": {
+      "enabled": true
+    },
+    "judge": {
+      "enabled": false
+    },
+    "model": {
+      "cache_dir": ".hf_cache/models",
+      "device": "auto",
+      "max_new_tokens": 48,
+      "max_prompt_tokens": 768,
+      "model_id": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+      "revision": null,
+      "tau": 24,
+      "torch_dtype": "float16"
+    },
+    "output": {
+      "base_dir": "outputs",
+      "run_name": "debug_repaired",
+      "save_candidates": true,
+      "save_csv": true,
+      "save_plot": true
+    },
+    "phase": "debug",
+    "reward": {
+      "batch_size": 4,
+      "cache_dir": ".hf_cache/models",
+      "device": "cpu",
+      "max_length": 768,
+      "model_id": "sileod/deberta-v3-large-tasksource-rlhf-reward-model",
+      "revision": null
+    },
+    "seed": 7,
+    "tuning": {
+      "aisp_grid": {
+        "alpha": [
+          0.99,
+          0.999
+        ],
+        "lambda_": [
+          0.1,
+          0.3,
+          0.5
+        ],
+        "sigma_sq": [
+          0.1,
+          0.3,
+          0.5
+        ]
+      },
+      "bon_grid": {
+        "temperature": [
+          0.7,
+          0.8,
+          1.0
+        ],
+        "top_p": [
+          0.8,
+          0.9,
+          0.95
+        ]
+      }
+    }
+  },
+  "generation_model": {
+    "commit_hash": "fe8a4ea1ffedaf415f4da2f062534de366a451e6",
+    "device": "mps",
+    "dtype": "float16",
+    "hidden_size": 2048,
+    "model_id": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+    "revision": null,
+    "vocab_size": 32000
+  },
+  "reward_model": {
+    "commit_hash": "2787455cca7340727403981ee11017209df69804",
+    "device": "cpu",
+    "model_id": "sileod/deberta-v3-large-tasksource-rlhf-reward-model",
+    "revision": null
+  }
+}

@@ -1,0 +1,23 @@
+[
+  {
+    "average_coherence": 0.5763177126646042,
+    "average_diversity": 0.9539088238635443,
+    "average_reward": 1.3298981760938962,
+    "average_runtime_seconds": 12.105478416507443,
+    "method": "best_of_n"
+  },
+  {
+    "average_coherence": 0.5866791357596716,
+    "average_diversity": 0.8452871686336071,
+    "average_reward": 0.5854046444098154,
+    "average_runtime_seconds": 8.526551527592042,
+    "method": "greedy"
+  },
+  {
+    "average_coherence": 0.2987075448036194,
+    "average_diversity": 0.723625244115531,
+    "average_reward": -0.4870258967081706,
+    "average_runtime_seconds": 93.47152075031772,
+    "method": "aisp"
+  }
+]

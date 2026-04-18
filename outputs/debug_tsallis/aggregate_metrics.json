@@ -1,0 +1,30 @@
+[
+  {
+    "average_coherence": 0.6034684777259827,
+    "average_diversity": 0.9683163737280296,
+    "average_reward": 1.7936314344406128,
+    "average_runtime_seconds": 45.32359839603305,
+    "method": "best_of_n"
+  },
+  {
+    "average_coherence": 0.5935202538967133,
+    "average_diversity": 0.9061003186350087,
+    "average_reward": 1.5720990598201752,
+    "average_runtime_seconds": 9.789365666452795,
+    "method": "greedy"
+  },
+  {
+    "average_coherence": 0.40642788261175156,
+    "average_diversity": 0.8573080481036077,
+    "average_reward": 0.7032372057437897,
+    "average_runtime_seconds": 179.54044791636989,
+    "method": "aisp"
+  },
+  {
+    "average_coherence": 0.4231199696660042,
+    "average_diversity": 0.8936170212765957,
+    "average_reward": 0.6506351754069328,
+    "average_runtime_seconds": 204.35911839595065,
+    "method": "tsallis_aisp"
+  }
+]

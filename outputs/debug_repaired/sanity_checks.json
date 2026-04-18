@@ -1,0 +1,49 @@
+{
+  "bon_uses_matched_sample_budget": {
+    "aisp_sample_budget": 16,
+    "bon_samples": 16,
+    "matched": true
+  },
+  "logged_model_device": "mps",
+  "machine_readable_outputs_saved": {
+    "candidate_jsonl": true,
+    "per_example_jsonl": true
+  },
+  "perturbation_applied_to_prelogits_not_embeddings": {
+    "details": {
+      "perturbation_target": "pre_logit_hidden_state_before_lm_head",
+      "perturbs_input_embeddings": false
+    },
+    "passes": true
+  },
+  "prelogit_and_perturbation_shapes_logged": true,
+  "reward_scoring_sequence_level_and_deterministic": {
+    "passes": true,
+    "score_first": -0.5217960476875305,
+    "score_second": -0.5217960476875305
+  },
+  "shape_log": {
+    "lm_head_input_shape": [
+      4,
+      2048
+    ],
+    "perturbation_shape": [
+      4,
+      2048
+    ],
+    "perturbation_target": "pre_logit_hidden_state_before_lm_head",
+    "perturbs_input_embeddings": false,
+    "prelogit_shape": [
+      4,
+      2048
+    ],
+    "prompt_length_tokens": 191,
+    "tau": 24
+  },
+  "small_noise_behaves_close_to_greedy_proxy": {
+    "approximate_prefix_token_agreement": 1.0,
+    "exact_match": true,
+    "note": "Compared zero-perturbation rollout to a rollout with Gaussian pre-logit perturbations at variance 1e-24 on the first prompt.",
+    "passes": true
+  }
+}

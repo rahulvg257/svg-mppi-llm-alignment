@@ -1,0 +1,76 @@
+seed: 7
+phase: debug
+
+dataset:
+  dataset_id: Anthropic/hh-rlhf
+  config_name: default
+  split: test
+  shuffle_seed: 17
+  debug_size: 2
+  tuning_size: 3
+  eval_size: 6
+  tuning_start: 0
+  eval_start: 8
+  prompt_source_field: chosen
+  cache_dir: .hf_cache/datasets
+
+model:
+  model_id: TinyLlama/TinyLlama-1.1B-Chat-v1.0
+  cache_dir: .hf_cache/models
+  device: auto
+  torch_dtype: float16
+  max_new_tokens: 48
+  max_prompt_tokens: 768
+  tau: 24
+
+reward:
+  model_id: sileod/deberta-v3-large-tasksource-rlhf-reward-model
+  cache_dir: .hf_cache/models
+  device: cpu
+  max_length: 768
+  batch_size: 4
+
+embedding:
+  model_id: princeton-nlp/sup-simcse-bert-base-uncased
+  cache_dir: .hf_cache/models
+  device: cpu
+  max_length: 256
+  batch_size: 8
+
+greedy:
+  enabled: true
+
+bon:
+  enabled: true
+  num_samples: null
+  top_p: 0.9
+  temperature: 0.8
+  batch_size: 4
+
+aisp:
+  enabled: true
+  n: 4
+  kappa: 4
+  sigma_sq: 0.3
+  lambda_: 0.3
+  alpha: 0.999
+  final_sample_count: 4
+
+tuning:
+  bon_grid:
+    temperature: [0.7, 0.8, 1.0]
+    top_p: [0.8, 0.9, 0.95]
+  aisp_grid:
+    sigma_sq: [0.1, 0.3, 0.5]
+    lambda_: [0.1, 0.3, 0.5]
+    alpha: [0.99, 0.999]
+
+output:
+  base_dir: outputs
+  run_name: debug
+  save_candidates: true
+  save_csv: true
+  save_plot: true
+
+judge:
+  enabled: false

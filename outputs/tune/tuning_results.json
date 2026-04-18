@@ -1,0 +1,56 @@
+{
+  "aisp_trials": [
+    {
+      "alpha": 0.99,
+      "average_reward": 0.7288882732391357,
+      "lambda_": 0.1,
+      "sigma_sq": 0.1
+    },
+    {
+      "alpha": 0.999,
+      "average_reward": 0.7288882732391357,
+      "lambda_": 0.1,
+      "sigma_sq": 0.1
+    },
+    {
+      "alpha": 0.99,
+      "average_reward": 1.2435846328735352,
+      "lambda_": 0.1,
+      "sigma_sq": 0.3
+    },
+    {
+      "alpha": 0.999,
+      "average_reward": 0.9657843112945557,
+      "lambda_": 0.1,
+      "sigma_sq": 0.3
+    }
+  ],
+  "best_aisp": {
+    "alpha": 0.99,
+    "enabled": true,
+    "final_sample_count": 2,
+    "kappa": 2,
+    "lambda_": 0.1,
+    "n": 2,
+    "sigma_sq": 0.3
+  },
+  "best_bon": {
+    "batch_size": 4,
+    "enabled": true,
+    "num_samples": null,
+    "temperature": 0.8,
+    "top_p": 0.8
+  },
+  "bon_trials": [
+    {
+      "average_reward": 0.9137048721313477,
+      "temperature": 0.8,
+      "top_p": 0.8
+    },
+    {
+      "average_reward": -1.4990017414093018,
+      "temperature": 0.8,
+      "top_p": 0.9
+    }
+  ]
+}
