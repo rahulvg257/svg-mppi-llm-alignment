@@ -18,11 +18,11 @@
 
 grid:
   # Probe how perturbation magnitude affects TMPC's coherence/reward trade-off.
-  tmpc.sigma: [0.05, 0.1, 0.2]
+  tmpc.sigma: [0.1, 0.2, 0.5, 1.0] 
 
   # Tsallis-MPPI's most informative axis on TinyLlama: the entropic index.
   # q < 1 broadens (heavier-tailed weights), q > 1 sparsifies. q = 1 -> TMPC.
-  tsallis_mppi.q: [0.8, 1.2, 1.5, 2.0]
+  tsallis_mppi.q: [0.8]
 
   # Reward temperature on both methods. Lower lambda -> sharper weights.
-  tsallis_mppi.lambda_: [0.5, 1.0]
+  tsallis_mppi.lambda_: [0.5]

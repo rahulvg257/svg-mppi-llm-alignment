@@ -15,11 +15,11 @@ dtype: "bfloat16"                # bf16 is the canonical Llama-2 inference dtype
 
 backbone:
   model_name: "meta-llama/Llama-2-7b-chat-hf"
-  max_new_tokens: 64
+  max_new_tokens: 32
   trust_remote_code: false
-  device_map: auto               # set to "auto" for multi-GPU sharding or with quantization
+  device_map: null              # set to "auto" for multi-GPU sharding or with quantization
   load_in_8bit: false            # set true to enable bitsandbytes 8-bit (requires ``bitsandbytes``)
-  load_in_4bit: false            # set true to enable bitsandbytes 4-bit (requires ``bitsandbytes``)
+  load_in_4bit: true            # set true to enable bitsandbytes 4-bit (requires ``bitsandbytes``)
 
 reward:
   model_name: "OpenAssistant/reward-model-deberta-v3-large-v2"
@@ -29,7 +29,7 @@ reward:
 data:
   dataset_name: "Anthropic/hh-rlhf"
   split: "test"
-  n_prompts: 50
+  n_prompts: 25
 
 decoding:
   do_sample: true
@@ -57,12 +57,12 @@ tsallis_mppi:
   q: 1.5
 
 methods:
-  baseline: true
-  best_of_n: true
+  baseline: false
+  best_of_n: false
   tmpc: true
-  tsallis_mppi: true
+  tsallis_mppi: false
 
 output:
-  dir: "cs4650_project/E2-Llama-2-7b-chat-hf"
+  dir: "cs4650_project/S2-Llama-2-7b-chat-hf"
   results_filename: "responses.json"
   metrics_filename: "metrics.csv"
