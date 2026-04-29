@@ -23,6 +23,8 @@ backbone:
   device_map: null               # null = single-device .to(); "auto" enables HF accelerate sharding (needed for >7B on multi-GPU)
   load_in_8bit: false            # bitsandbytes 8-bit weight loading (forces device_map="auto")
   load_in_4bit: false            # bitsandbytes 4-bit weight loading (forces device_map="auto")
+  bnb_4bit_quant_type: "nf4"     # "nf4" (recommended) or "fp4"; only used when load_in_4bit=true
+  bnb_4bit_use_double_quant: false   # double quantization saves ~0.4 GB on 8B models at minor quality cost
 
 # ---------------------------------------------------------------------------
 # Reward model (used for scoring rollouts and final responses)

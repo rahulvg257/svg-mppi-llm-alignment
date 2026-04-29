@@ -1,0 +1,77 @@
+# configs/llama3_8b_titanrtx.yaml
+# Llama-3-8B preset tuned for a single 24 GB GPU (NVIDIA TITAN RTX, RTX 3090,
+# RTX 4090, etc.). Uses NF4 4-bit weight quantization with double-quant so the
+# backbone fits in ~5 GB, leaving ~18 GB for the reward model, KV caches, and
+# the K=16 batched TMPC rollouts.
+#
+# Requirements:
+#   - bitsandbytes installed:  pip install bitsandbytes
+#   - HuggingFace access to meta-llama/Meta-Llama-3-8B-Instruct
+#     (request at https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct
+#      then run ``huggingface-cli login``)
+#   - GPU with compute capability >= 7.5 (TITAN RTX is 7.5; older cards won't work)
+#
+# Notes:
+#   - dtype is float16 rather than bfloat16: Turing architecture (TITAN RTX)
+#     supports bf16 but fp16 throughput is higher. Compute dtype for 4-bit
+#     dequantized matmuls is also fp16.
+#   - If you OOM during TMPC rollouts, reduce tmpc.K / tsallis_mppi.K to 8.
+
+seed: 42
+device: "auto"
+dtype: "float16"
+
+backbone:
+  model_name: "meta-llama/Meta-Llama-3-8B-Instruct"
+  max_new_tokens: 64
+  trust_remote_code: false
+  device_map: "auto"             # required by bitsandbytes
+  load_in_8bit: false
+  load_in_4bit: true
+  bnb_4bit_quant_type: "nf4"     # NF4 retains more accuracy than FP4 for LLM weights
+  bnb_4bit_use_double_quant: true
+
+reward:
+  model_name: "OpenAssistant/reward-model-deberta-v3-large-v2"
+  max_length: 512
+  batch_size: 4
+
+data:
+  dataset_name: "Anthropic/hh-rlhf"
+  split: "test"
+  n_prompts: 50
+
+decoding:
+  do_sample: true
+  top_p: 0.9
+  temperature: 0.8
+  repetition_penalty: 1.0
+
+best_of_n:
+  N: 8
+
+# Llama-3-8B hidden_size=4096; sigma=0.05 keeps perturbation norm comparable to
+# TinyLlama's sigma=0.1 (which produced reasonable rollouts).
+tmpc:
+  K: 16
+  H: 8
+  sigma: 0.05
+  lambda_: 1.0
+
+tsallis_mppi:
+  K: 16
+  H: 8
+  sigma: 0.05
+  lambda_: 1.0
+  q: 1.5
+
+methods:
+  baseline: true
+  best_of_n: true
+  tmpc: true
+  tsallis_mppi: true
+
+output:
+  dir: "outputs_llama3_8b_titanrtx"
+  results_filename: "responses.json"
+  metrics_filename: "metrics.csv"

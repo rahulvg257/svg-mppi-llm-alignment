@@ -1,0 +1,73 @@
+# configs/llama3_8b.yaml
+# Preset for running svg_tmpc with meta-llama/Meta-Llama-3-8B-Instruct as the backbone.
+#
+# Llama-3-8B is gated on HuggingFace; you must request access at
+# https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct and run
+# ``huggingface-cli login`` once before invoking ``svg-tmpc-run``.
+#
+# This preset assumes a system with >=24 GB of free VRAM after loading the reward
+# model. For 24 GB cards (e.g. TITAN RTX), use configs/llama3_8b_titanrtx.yaml
+# instead, which enables 4-bit NF4 quantization.
+#
+# Memory: bf16 weights are ~16 GB. Plus the OpenAssistant DeBERTa RM (~1.5 GB)
+# and per-step KV caches for K=16 batched rollouts, you should plan for ~32 GB
+# peak (e.g. an A100 40GB or 80GB).
+
+seed: 42
+device: "auto"
+dtype: "bfloat16"
+
+backbone:
+  model_name: "meta-llama/Meta-Llama-3-8B-Instruct"
+  max_new_tokens: 64
+  trust_remote_code: false
+  device_map: null
+  load_in_8bit: false
+  load_in_4bit: false
+  bnb_4bit_quant_type: "nf4"
+  bnb_4bit_use_double_quant: false
+
+reward:
+  model_name: "OpenAssistant/reward-model-deberta-v3-large-v2"
+  max_length: 512
+  batch_size: 4
+
+data:
+  dataset_name: "Anthropic/hh-rlhf"
+  split: "test"
+  n_prompts: 50
+
+decoding:
+  do_sample: true
+  top_p: 0.9
+  temperature: 0.8
+  repetition_penalty: 1.0
+
+best_of_n:
+  N: 8
+
+# Llama-3-8B has hidden_size=4096 (vs TinyLlama's 2048). The default sigma=0.1
+# gives a noise norm of ~6.4 which may be too aggressive; sweep in [0.03, 0.05, 0.1].
+tmpc:
+  K: 16
+  H: 8
+  sigma: 0.05
+  lambda_: 1.0
+
+tsallis_mppi:
+  K: 16
+  H: 8
+  sigma: 0.05
+  lambda_: 1.0
+  q: 1.5
+
+methods:
+  baseline: true
+  best_of_n: true
+  tmpc: true
+  tsallis_mppi: true
+
+output:
+  dir: "outputs_llama3_8b"
+  results_filename: "responses.json"
+  metrics_filename: "metrics.csv"

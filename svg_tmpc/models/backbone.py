@@ -62,6 +62,8 @@ class Backbone:
         device_map: Optional[str] = None,
         load_in_8bit: bool = False,
         load_in_4bit: bool = False,
+        bnb_4bit_quant_type: str = "nf4",
+        bnb_4bit_use_double_quant: bool = False,
     ) -> None:
         self.model_name = model_name
         torch_dtype = _DTYPES.get(dtype.lower(), torch.float32)
@@ -89,11 +91,15 @@ class Backbone:
                     "load_in_8bit/load_in_4bit require the optional 'bitsandbytes' "
                     "package to be installed."
                 ) from exc
-            quant_config = BitsAndBytesConfig(
-                load_in_8bit=load_in_8bit,
-                load_in_4bit=load_in_4bit,
-                bnb_4bit_compute_dtype=torch_dtype if load_in_4bit else None,
-            )
+            bnb_kwargs: Dict[str, Any] = {
+                "load_in_8bit": load_in_8bit,
+                "load_in_4bit": load_in_4bit,
+            }
+            if load_in_4bit:
+                bnb_kwargs["bnb_4bit_compute_dtype"] = torch_dtype
+                bnb_kwargs["bnb_4bit_quant_type"] = bnb_4bit_quant_type
+                bnb_kwargs["bnb_4bit_use_double_quant"] = bnb_4bit_use_double_quant
+            quant_config = BitsAndBytesConfig(**bnb_kwargs)
             load_kwargs["quantization_config"] = quant_config
             # Quantized loading must be sharded; force device_map if not already set.
             if device_map is None:

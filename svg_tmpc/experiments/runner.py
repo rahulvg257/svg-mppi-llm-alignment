@@ -69,6 +69,10 @@ class ExperimentRunner:
         device_map = self.config.get("backbone", "device_map", default=None)
         load_in_8bit = bool(self.config.get("backbone", "load_in_8bit", default=False))
         load_in_4bit = bool(self.config.get("backbone", "load_in_4bit", default=False))
+        bnb_4bit_quant_type = str(self.config.get("backbone", "bnb_4bit_quant_type", default="nf4"))
+        bnb_4bit_use_double_quant = bool(
+            self.config.get("backbone", "bnb_4bit_use_double_quant", default=False)
+        )
         self.logger.info(
             "Loading backbone %s on device=%s dtype=%s device_map=%s 8bit=%s 4bit=%s",
             backbone_name, device, dtype, device_map, load_in_8bit, load_in_4bit,
@@ -81,6 +85,8 @@ class ExperimentRunner:
             device_map=device_map,
             load_in_8bit=load_in_8bit,
             load_in_4bit=load_in_4bit,
+            bnb_4bit_quant_type=bnb_4bit_quant_type,
+            bnb_4bit_use_double_quant=bnb_4bit_use_double_quant,
         )
 
         rm_name = str(self.config.get("reward", "model_name", default="OpenAssistant/reward-model-deberta-v3-large-v2"))

@@ -81,27 +81,59 @@ is enumerated; every combination re-runs every enabled method. Sweeping
 `backbone.*` or `reward.*` does not reload the model — run separate sweeps
 for those.
 
-## Larger backbones (Llama-2-7B)
+## Larger backbones (Llama-2-7B, Llama-3-8B)
 
-The backbone wrapper is architecture-agnostic for any Llama-family causal LM,
-so swapping in `meta-llama/Llama-2-7b-chat-hf` is a config change:
+The backbone wrapper is architecture-agnostic for any Llama-family causal LM —
+swapping in a 7B or 8B instruct model is a config change:
 
 ```bash
+# Llama-2-7B-chat (>=24 GB VRAM, bf16)
 svg-tmpc-run --config configs/llama2_7b.yaml --output-dir outputs_llama2_7b/
+
+# Llama-3-8B-Instruct (>=32 GB VRAM, bf16)
+svg-tmpc-run --config configs/llama3_8b.yaml --output-dir outputs_llama3_8b/
+
+# Llama-3-8B-Instruct on a single 24 GB card (NF4 + double-quant, ~5 GB weights)
+svg-tmpc-run --config configs/llama3_8b_titanrtx.yaml --output-dir outputs_llama3_8b/
 ```
 
-Llama-2-7B is gated; request access on HuggingFace and run `huggingface-cli
-login` first. Memory tips:
+All three models are gated on HuggingFace — request access and run
+`huggingface-cli login` once before invoking the CLI.
 
-- `dtype: bfloat16` → ~13 GB weights, fits on a single 24 GB GPU.
-- For tighter VRAM, set `backbone.load_in_8bit: true` (requires the optional
-  `bitsandbytes` package) — drops to ~7 GB and forces `device_map="auto"`.
-- For multi-GPU sharding without quantization, set `backbone.device_map: "auto"`.
+### Memory recipes
 
-The default sigma=0.1 was tuned for TinyLlama's 2048-dim hidden state. Llama-2-7B
-has a 4096-dim hidden state, so you may want to **re-sweep sigma** (try 0.03,
-0.05, 0.1) when moving to the larger backbone — `svg-tmpc-sweep` is the easiest
-way to do this.
+| Setup                          | dtype    | Quantization        | Weights | Notes                          |
+| ------------------------------ | -------- | ------------------- | ------- | ------------------------------ |
+| Llama-2-7B, A100 40 GB         | bfloat16 | none                | ~13 GB  | `configs/llama2_7b.yaml`       |
+| Llama-3-8B, A100 40/80 GB      | bfloat16 | none                | ~16 GB  | `configs/llama3_8b.yaml`       |
+| Llama-3-8B, **TITAN RTX 24 GB**| float16  | NF4 + double-quant  | ~5 GB   | `configs/llama3_8b_titanrtx.yaml` |
+| Any 7B–8B, multi-GPU           | bfloat16 | none, `device_map: "auto"` | ~13–16 GB sharded | set `backbone.device_map: "auto"` |
+
+### TITAN RTX (24 GB) recipe
+
+The `llama3_8b_titanrtx.yaml` preset enables 4-bit NF4 quantization with double
+quantization, which brings Llama-3-8B's weights to ~5 GB. With the OpenAssistant
+DeBERTa reward model (~1.5 GB) and K=16 batched TMPC rollouts, peak VRAM stays
+comfortably under 24 GB. Requirements:
+
+- `pip install bitsandbytes` (and a recent NVIDIA driver supporting CUDA ≥ 11.6)
+- GPU compute capability ≥ 7.5 (TITAN RTX, RTX 30/40-series, A-series). Older
+  cards (e.g. GTX 10-series) are unsupported by bitsandbytes 4-bit.
+- If you OOM during TMPC rollouts, reduce `tmpc.K` / `tsallis_mppi.K` to 8.
+
+### Hyperparameter notes for larger backbones
+
+The default `sigma=0.1` was tuned for TinyLlama's 2048-dim hidden state.
+Llama-2-7B and Llama-3-8B both have hidden_size=4096, so the noise norm doubles
+at the same `sigma`. The Llama-3 presets default to `sigma=0.05` to compensate;
+for Llama-2-7B you may want to **re-sweep sigma** in `[0.03, 0.05, 0.1]` —
+`svg-tmpc-sweep` is the easiest way to do this.
+
+Llama-3-Instruct also uses a different chat template (`<|start_header_id|>...`)
+than the `Human:`/`Assistant:` format produced by the HH-RLHF loader. The model
+will still produce coherent continuations under the simpler format, but for
+absolute-quality numbers you may want to preprocess prompts with
+`tokenizer.apply_chat_template` before calling the samplers.
 
 ## Algorithm sketch
 
