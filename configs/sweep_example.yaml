@@ -1,0 +1,28 @@
+# configs/sweep_example.yaml
+# Example sweep spec consumed by ``svg-tmpc-sweep``.
+#
+# The harness takes the Cartesian product of every list under ``grid``. Each combo
+# is applied as overrides on top of the base config (e.g. configs/default.yaml),
+# all enabled methods are run for that combo, and the resulting metrics row is
+# appended to <output-dir>/sweep_summary.csv.
+#
+# Usage:
+#   svg-tmpc-sweep --config configs/default.yaml \
+#                  --sweep configs/sweep_example.yaml \
+#                  --output-dir sweeps/initial/
+#
+# Tip: sweep keys for one method don't affect other methods, but every combo
+# re-runs *all* enabled methods. To save compute, disable methods you aren't
+# studying via the corresponding ``methods.<name>: false`` override (note that
+# disabling baseline makes win_rate undefined for that run).
+
+grid:
+  # Probe how perturbation magnitude affects TMPC's coherence/reward trade-off.
+  tmpc.sigma: [0.05, 0.1, 0.2]
+
+  # Tsallis-MPPI's most informative axis on TinyLlama: the entropic index.
+  # q < 1 broadens (heavier-tailed weights), q > 1 sparsifies. q = 1 -> TMPC.
+  tsallis_mppi.q: [0.8, 1.2, 1.5, 2.0]
+
+  # Reward temperature on both methods. Lower lambda -> sharper weights.
+  tsallis_mppi.lambda_: [0.5, 1.0]

@@ -66,12 +66,21 @@ class ExperimentRunner:
 
         backbone_name = str(self.config.get("backbone", "model_name", default="TinyLlama/TinyLlama-1.1B-Chat-v1.0"))
         trust_remote = bool(self.config.get("backbone", "trust_remote_code", default=False))
-        self.logger.info("Loading backbone %s on device=%s dtype=%s", backbone_name, device, dtype)
+        device_map = self.config.get("backbone", "device_map", default=None)
+        load_in_8bit = bool(self.config.get("backbone", "load_in_8bit", default=False))
+        load_in_4bit = bool(self.config.get("backbone", "load_in_4bit", default=False))
+        self.logger.info(
+            "Loading backbone %s on device=%s dtype=%s device_map=%s 8bit=%s 4bit=%s",
+            backbone_name, device, dtype, device_map, load_in_8bit, load_in_4bit,
+        )
         self.backbone = Backbone(
             model_name=backbone_name,
             device=device,
             dtype=dtype,
             trust_remote_code=trust_remote,
+            device_map=device_map,
+            load_in_8bit=load_in_8bit,
+            load_in_4bit=load_in_4bit,
         )
 
         rm_name = str(self.config.get("reward", "model_name", default="OpenAssistant/reward-model-deberta-v3-large-v2"))
@@ -145,6 +154,25 @@ class ExperimentRunner:
     def _enabled(self, method: str) -> bool:
         flag = self.config.get("methods", method, default=True)
         return bool(flag)
+
+    def apply_overrides(self, overrides: Dict[str, Any]) -> None:
+        """Apply dotted-path overrides into the in-memory config and rebuild samplers.
+
+        Used by the sweep harness to swap hyperparameters between runs without
+        reloading the backbone or reward model. ``backbone.*`` and ``reward.*``
+        overrides do *not* trigger a model reload and will be ignored at the model
+        level; sweep over those by launching separate runs instead.
+        """
+        for dotted, value in overrides.items():
+            keys = dotted.split(".")
+            node = self.config.raw
+            for k in keys[:-1]:
+                if k not in node or not isinstance(node[k], dict):
+                    node[k] = {}
+                node = node[k]
+            node[keys[-1]] = value
+        if self.backbone is not None and self.reward_model is not None:
+            self.samplers = self._build_samplers()
 
     def run_method(self, method_name: str) -> Dict[str, Any]:
         if self.backbone is None:

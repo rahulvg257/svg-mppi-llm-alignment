@@ -20,6 +20,9 @@ backbone:
   model_name: "TinyLlama/TinyLlama-1.1B-Chat-v1.0"   # HuggingFace model id for the policy LM
   max_new_tokens: 64             # number of tokens to generate per prompt at evaluation time
   trust_remote_code: false       # whether to pass trust_remote_code=True to from_pretrained
+  device_map: null               # null = single-device .to(); "auto" enables HF accelerate sharding (needed for >7B on multi-GPU)
+  load_in_8bit: false            # bitsandbytes 8-bit weight loading (forces device_map="auto")
+  load_in_4bit: false            # bitsandbytes 4-bit weight loading (forces device_map="auto")
 
 # ---------------------------------------------------------------------------
 # Reward model (used for scoring rollouts and final responses)

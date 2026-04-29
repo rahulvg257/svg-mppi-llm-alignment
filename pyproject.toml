@@ -55,6 +55,7 @@ dev = [
 [project.scripts]
 svg-tmpc-run = "svg_tmpc.experiments.runner:main"
 svg-tmpc-eval = "svg_tmpc.experiments.evaluate:main"
+svg-tmpc-sweep = "svg_tmpc.experiments.sweep:main"
 
 [project.urls]
 Homepage = "https://github.com/rahulvg257/svg-mppi-llm-alignment"

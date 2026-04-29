@@ -1,10 +1,17 @@
 # svg_tmpc/models/backbone.py
-"""TinyLlama backbone wrapper exposing hidden-state hooks for representation editing."""
+"""Causal-LM backbone wrapper exposing hidden-state hooks for representation editing.
+
+The wrapper defaults to TinyLlama-1.1B-Chat but works for any Llama-family causal LM
+(including Llama-2-7B-chat) since it locates the final RMSNorm via standard module
+paths. For larger models pass ``device_map="auto"`` and/or ``load_in_8bit=True`` /
+``load_in_4bit=True`` to enable HuggingFace device-sharding and bitsandbytes
+quantization.
+"""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedModel, PreTrainedTokenizerBase
@@ -52,11 +59,14 @@ class Backbone:
         device: str = "auto",
         dtype: str = "float16",
         trust_remote_code: bool = False,
+        device_map: Optional[str] = None,
+        load_in_8bit: bool = False,
+        load_in_4bit: bool = False,
     ) -> None:
         self.model_name = model_name
-        self.device = _resolve_device(device)
         torch_dtype = _DTYPES.get(dtype.lower(), torch.float32)
-        if self.device.type == "cpu":
+        requested_device = _resolve_device(device)
+        if requested_device.type == "cpu":
             torch_dtype = torch.float32
 
         self.tokenizer: PreTrainedTokenizerBase = AutoTokenizer.from_pretrained(
@@ -65,15 +75,45 @@ class Backbone:
         if self.tokenizer.pad_token_id is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
 
+        load_kwargs: Dict[str, Any] = {
+            "torch_dtype": torch_dtype,
+            "trust_remote_code": trust_remote_code,
+        }
+
+        quant_config = None
+        if load_in_8bit or load_in_4bit:
+            try:
+                from transformers import BitsAndBytesConfig
+            except ImportError as exc:
+                raise ImportError(
+                    "load_in_8bit/load_in_4bit require the optional 'bitsandbytes' "
+                    "package to be installed."
+                ) from exc
+            quant_config = BitsAndBytesConfig(
+                load_in_8bit=load_in_8bit,
+                load_in_4bit=load_in_4bit,
+                bnb_4bit_compute_dtype=torch_dtype if load_in_4bit else None,
+            )
+            load_kwargs["quantization_config"] = quant_config
+            # Quantized loading must be sharded; force device_map if not already set.
+            if device_map is None:
+                device_map = "auto"
+
+        if device_map is not None:
+            load_kwargs["device_map"] = device_map
+
         self.model: PreTrainedModel = AutoModelForCausalLM.from_pretrained(
-            model_name,
-            torch_dtype=torch_dtype,
-            trust_remote_code=trust_remote_code,
-        ).to(self.device)
+            model_name, **load_kwargs
+        )
+        if device_map is None and quant_config is None:
+            self.model = self.model.to(requested_device)
         self.model.eval()
+
+        self.device = next(self.model.parameters()).device
 
         self._final_norm = self._locate_final_norm()
         self._lm_head = self.model.get_output_embeddings()
+        self._lm_head_device = next(self._lm_head.parameters()).device
         self._captured_hidden: Optional[torch.Tensor] = None
         self._hook_handle = self._final_norm.register_forward_hook(self._capture_hook)
 
@@ -123,6 +163,8 @@ class Backbone:
     @torch.no_grad()
     def lm_head_forward(self, hidden_state: torch.Tensor) -> torch.Tensor:
         """Apply the LM head directly to a hidden-state tensor and return logits."""
+        if hidden_state.device != self._lm_head_device:
+            hidden_state = hidden_state.to(self._lm_head_device)
         return self._lm_head(hidden_state)
 
     @torch.no_grad()
