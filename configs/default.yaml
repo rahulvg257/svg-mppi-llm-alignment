@@ -1,0 +1,89 @@
+# configs/default.yaml
+# Default hyperparameters for the svg_tmpc package.
+# All values can be overridden by passing a custom YAML file to ExperimentRunner.
+
+# ---------------------------------------------------------------------------
+# Reproducibility
+# ---------------------------------------------------------------------------
+seed: 42                         # global seed used for python, numpy, and torch RNGs
+
+# ---------------------------------------------------------------------------
+# Hardware / runtime
+# ---------------------------------------------------------------------------
+device: "auto"                   # "auto", "cuda", "mps", or "cpu"; "auto" picks the best available
+dtype: "float16"                 # weight dtype for the backbone: "float16", "bfloat16", or "float32"
+
+# ---------------------------------------------------------------------------
+# Backbone language model
+# ---------------------------------------------------------------------------
+backbone:
+  model_name: "TinyLlama/TinyLlama-1.1B-Chat-v1.0"   # HuggingFace model id for the policy LM
+  max_new_tokens: 64             # number of tokens to generate per prompt at evaluation time
+  trust_remote_code: false       # whether to pass trust_remote_code=True to from_pretrained
+
+# ---------------------------------------------------------------------------
+# Reward model (used for scoring rollouts and final responses)
+# ---------------------------------------------------------------------------
+reward:
+  model_name: "OpenAssistant/reward-model-deberta-v3-large-v2"   # HuggingFace sequence classifier
+  max_length: 512                # truncation length for prompt+response pairs scored by the RM
+  batch_size: 4                  # batch size for reward scoring; reduce on small GPUs
+
+# ---------------------------------------------------------------------------
+# Dataset
+# ---------------------------------------------------------------------------
+data:
+  dataset_name: "Anthropic/hh-rlhf"   # HuggingFace dataset id
+  split: "test"                  # which split to draw evaluation prompts from
+  n_prompts: 50                  # number of evaluation prompts (keep small for compute budget)
+
+# ---------------------------------------------------------------------------
+# Sampler-shared decoding parameters
+# ---------------------------------------------------------------------------
+decoding:
+  do_sample: true                # whether the *baseline* sampler uses stochastic decoding
+  top_p: 0.9                     # nucleus sampling cutoff for the baseline
+  temperature: 0.8               # sampling temperature for the baseline
+  repetition_penalty: 1.0        # 1.0 disables the penalty
+
+# ---------------------------------------------------------------------------
+# Best-of-N sampler
+# ---------------------------------------------------------------------------
+best_of_n:
+  N: 8                           # number of independent baseline samples to score and rank
+
+# ---------------------------------------------------------------------------
+# TMPC (vanilla MPPI) sampler
+# ---------------------------------------------------------------------------
+tmpc:
+  K: 16                          # number of perturbation samples per decoding step
+  H: 8                           # rollout horizon in tokens used to score each perturbation
+  sigma: 0.1                     # std-dev of Gaussian perturbations applied to the pre-logit hidden state
+  lambda_: 1.0                   # MPPI temperature; smaller values produce sharper weights
+
+# ---------------------------------------------------------------------------
+# Tsallis-MPPI sampler (novel contribution)
+# ---------------------------------------------------------------------------
+tsallis_mppi:
+  K: 16                          # number of perturbation samples per decoding step
+  H: 8                           # rollout horizon in tokens used to score each perturbation
+  sigma: 0.1                     # std-dev of Gaussian perturbations applied to the pre-logit hidden state
+  lambda_: 1.0                   # temperature on rewards before applying the Tsallis transform
+  q: 1.5                         # Tsallis entropic index; q -> 1 recovers TMPC, q > 1 sparsifies, q < 1 broadens
+
+# ---------------------------------------------------------------------------
+# Methods to run (set false to skip a method end-to-end)
+# ---------------------------------------------------------------------------
+methods:
+  baseline: true
+  best_of_n: true
+  tmpc: true
+  tsallis_mppi: true
+
+# ---------------------------------------------------------------------------
+# Output
+# ---------------------------------------------------------------------------
+output:
+  dir: "outputs"                 # base directory under which generations and metrics are written
+  results_filename: "responses.json"   # generation outputs per method
+  metrics_filename: "metrics.csv"      # aggregated metrics table written by svg-tmpc-eval
