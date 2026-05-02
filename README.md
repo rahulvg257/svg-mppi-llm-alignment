@@ -9,10 +9,9 @@ preference dataset:
 
 1. **Baseline** — unmodified greedy / nucleus decoding.
 2. **Best-of-N** — sample N continuations, keep the highest-reward one.
-3. **TMPC** — representation-editing decoding via vanilla MPPI weights, after
-   Wang et al., *Test-time Alignment for Large Language Models via Textual
-   Model Predictive Control* (ICLR 2026).
-4. **Tsallis-MPPI** — our novel contribution. Replaces the softmax MPPI weights
+3. **AISP** — representation-editing decoding via vanilla MPPI weights, after
+   Kanai et al., *Test-Time Alignment of LLMs via Sampling-Based Optimal Control in pre-logit space*.
+4. **Tsallis-AISP** — our novel contribution. Replaces the softmax MPPI weights
    with the q-exponential (Tsallis) weights from
    Wang et al., *Variational Inference MPC using Tsallis Divergence* (RSS 2021),
    yielding more robust exploration of the perturbation distribution.
@@ -201,8 +200,7 @@ the device and dtype with command-line flags or a custom YAML.
 
 ## References
 
-- Wang, K.-D., et al. *Test-time Alignment for Large Language Models via Textual
-  Model Predictive Control.* ICLR 2026.
+- Kanai, S., et al. *Test-Time Alignment of LLMs via Sampling-Based Optimal Control in pre-logit space.*
 - Wang, Z., et al. *Variational Inference MPC using Tsallis Divergence.* RSS 2021.
 - Williams, G., et al. *Aggressive Driving with Model Predictive Path Integral
   Control.* ICRA 2016.
