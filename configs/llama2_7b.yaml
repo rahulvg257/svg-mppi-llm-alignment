@@ -1,0 +1,68 @@
+# configs/llama2_7b.yaml
+# Preset for running svg_tmpc with meta-llama/Llama-2-7b-chat-hf as the backbone.
+#
+# Llama-2-7B is gated on HuggingFace; you must request access at
+# https://huggingface.co/meta-llama/Llama-2-7b-chat-hf and run
+# ``huggingface-cli login`` once before invoking ``svg-tmpc-run`` with this config.
+#
+# Memory: bfloat16 weights are ~13 GB. A single 24 GB GPU is enough for inference
+# (with the reward model on the same GPU it gets tight; consider a separate GPU for
+# the RM, or set load_in_8bit: true to shave another ~6 GB).
+
+seed: 42
+device: "auto"
+dtype: "bfloat16"                # bf16 is the canonical Llama-2 inference dtype
+
+backbone:
+  model_name: "meta-llama/Llama-2-7b-chat-hf"
+  max_new_tokens: 64
+  trust_remote_code: false
+  device_map: auto               # set to "auto" for multi-GPU sharding or with quantization
+  load_in_8bit: false            # set true to enable bitsandbytes 8-bit (requires ``bitsandbytes``)
+  load_in_4bit: false            # set true to enable bitsandbytes 4-bit (requires ``bitsandbytes``)
+
+reward:
+  model_name: "OpenAssistant/reward-model-deberta-v3-large-v2"
+  max_length: 512
+  batch_size: 4
+
+data:
+  dataset_name: "Anthropic/hh-rlhf"
+  split: "test"
+  n_prompts: 50
+
+decoding:
+  do_sample: true
+  top_p: 0.9
+  temperature: 0.8
+  repetition_penalty: 1.0
+
+best_of_n:
+  N: 16
+
+# TMPC hyperparameters scale with hidden_size (Llama-2-7B has hidden_size=4096 vs
+# TinyLlama's 2048). The default sigma=0.1 may be too aggressive; consider 0.05 once
+# you start sweeping.
+tmpc:
+  K: 16
+  H: 16
+  sigma: 0.05
+  lambda_: 1.0
+
+tsallis_mppi:
+  K: 16
+  H: 16
+  sigma: 0.05
+  lambda_: 1.0
+  q: 1.5
+
+methods:
+  baseline: true
+  best_of_n: true
+  tmpc: true
+  tsallis_mppi: true
+
+output:
+  dir: "cs4650_project/E2-Llama-2-7b-chat-hf"
+  results_filename: "responses.json"
+  metrics_filename: "metrics.csv"

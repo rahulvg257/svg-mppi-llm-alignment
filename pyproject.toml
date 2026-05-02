@@ -1,0 +1,77 @@
+# pyproject.toml
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "svg-tmpc"
+version = "0.1.0"
+description = "Test-time LLM alignment via variational-inference sampling-based optimal control (Tsallis-MPPI)."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+    { name = "Rahul Vodeb Ghosh", email = "rghosh88@gatech.edu" },
+    { name = "Bradley Cao", email = "bcao60@gatech.edu" },
+]
+keywords = [
+    "llm",
+    "alignment",
+    "mppi",
+    "tsallis",
+    "test-time",
+    "variational-inference",
+    "rlhf",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "torch>=2.0",
+    "transformers>=4.40",
+    "datasets",
+    "nltk",
+    "pyyaml",
+    "pandas",
+    "numpy",
+    "tqdm",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "black",
+    "isort",
+]
+
+[project.scripts]
+svg-tmpc-run = "svg_tmpc.experiments.runner:main"
+svg-tmpc-eval = "svg_tmpc.experiments.evaluate:main"
+svg-tmpc-sweep = "svg_tmpc.experiments.sweep:main"
+
+[project.urls]
+Homepage = "https://github.com/rahulvg257/svg-mppi-llm-alignment"
+Repository = "https://github.com/rahulvg257/svg-mppi-llm-alignment"
+
+[tool.setuptools.packages.find]
+include = ["svg_tmpc*"]
+exclude = ["tests*"]
+
+[tool.setuptools.package-data]
+svg_tmpc = ["../configs/*.yaml"]
+
+[tool.black]
+line-length = 100
+target-version = ["py39", "py310", "py311"]
+
+[tool.isort]
+profile = "black"
+line_length = 100
