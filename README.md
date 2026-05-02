@@ -103,8 +103,8 @@ All three models are gated on HuggingFace — request access and run
 
 | Setup                          | dtype    | Quantization        | Weights | Notes                          |
 | ------------------------------ | -------- | ------------------- | ------- | ------------------------------ |
-| Llama-2-7B, A100 40 GB         | bfloat16 | none                | ~13 GB  | `configs/llama2_7b.yaml`       |
-| Llama-3-8B, A100 40/80 GB      | bfloat16 | none                | ~16 GB  | `configs/llama3_8b.yaml`       |
+| Llama-2-7B, TITAN RTX 24 GB    | bfloat16 | none                | ~13 GB  | `configs/llama2_7b.yaml`       |
+| Llama-3-8B, TITAN RTX 24 GB    | bfloat16 | none                | ~16 GB  | `configs/llama3_8b.yaml`       |
 | Llama-3-8B, **TITAN RTX 24 GB**| float16  | NF4 + double-quant  | ~5 GB   | `configs/llama3_8b_titanrtx.yaml` |
 | Any 7B–8B, multi-GPU           | bfloat16 | none, `device_map: "auto"` | ~13–16 GB sharded | set `backbone.device_map: "auto"` |
 
